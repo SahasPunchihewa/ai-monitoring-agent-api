@@ -1,7 +1,5 @@
 import json
-
-import markdown
-
+from markdown_it import MarkdownIt
 from app.config.logger_config import log
 from app.config.variable import ALERT_OPTIONS, AI_ENABLED
 from app.model.exception import LokiException, AiException, EmailException, SlackException
@@ -17,6 +15,7 @@ class AlertService:
     email_service = EmailService()
     slack_service = SlackService()
     ai_service = AIService()
+    markdown_service = MarkdownIt()
 
     def send_alert(self, subject: str, level: str, service: str, queries=None, limit: int = None):
         try:
@@ -35,7 +34,7 @@ class AlertService:
                 pass
             else:
                 ai_summary = self.ai_service.generate_log_insights(json.dumps(logs)) if AI_ENABLED == 'True' else ''
-                html_ai_summary = markdown.markdown(ai_summary)
+                html_ai_summary = self.markdown_service.render(ai_summary)
 
                 if 'EMAIL' in ALERT_OPTIONS:
                     self.email_service.send_email(subject, logs=logs, aiSummary=html_ai_summary, aiEnabled=AI_ENABLED)
