@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>KAYA Alert</title>
+</head>
+
+<body style="background-color: whitesmoke; padding: 1% 5% 2.5%; font-family: 'Open Sans', Arial, sans-serif !important;">
+<table cellspacing="0" cellpadding="0" align="center" style="padding: 20px; background-color: white; font-size: medium; min-width: 624px">
+    <tbody>
+    <tr>
+        <td align="center">
+            <img src="{{ imgLink }}" width="200px" class="CToWUd" alt="KAYA Logo"/>
+        </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td style="color: red;">
+            <h1>Application ERROR Alert!</h1>
+        </td>
+    </tr>
+    {% if aiEnabled == 'True' %}
+    <tr>
+        <td>
+            <h2>AI Summary</h2>
+            <p>
+                {{ aiSummary }}
+            </p>
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            <h2>Error details</h2>
+            <table style="border: 1px solid black; border-collapse: collapse; border-radius: 10px; width: 100%; table-layout: auto;">
+                <tr>
+                    <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
+                        Log
+                    </th>
+                    <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
+                        Count
+                    </th>
+                </tr>
+                {% for log in logs %}
+                    <tr>
+                        <td style="border: 1px solid black; padding: 8px;white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
+                            {{ log.log }}
+                        </td>
+                        <td style="border: 1px solid black; padding: 8px;">
+                            {{ log.count }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>Thank you,</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td>Note: This is a system-generated email from {{ appName }}.</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td align="center" style="font-size: small;color: grey; padding-top: 5px;">{{ copyrightNotice }}</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+
+</html>
