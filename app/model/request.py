@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class LogRequest(BaseModel):
-    service: str
+    services: List[str]
     level: str
     queries: List[str]
     limit: int | None = None

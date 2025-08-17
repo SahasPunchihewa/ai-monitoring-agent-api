@@ -9,6 +9,7 @@
 <body style="background-color: whitesmoke; padding: 1% 5% 2.5%; font-family: 'Open Sans', Arial, sans-serif !important;">
 <table cellspacing="0" cellpadding="0" align="center" style="padding: 20px; background-color: white; font-size: medium; min-width: 624px">
     <tbody>
+    {% if logoEnabled == 'True' %}
     <tr>
         <td align="center">
             <img src="{{ imgLink }}" width="200px" class="CToWUd" alt="KAYA Logo"/>
@@ -17,6 +18,7 @@
     <tr>
         <td>&nbsp;</td>
     </tr>
+    {% endif %}
     <tr>
         <td style="color: red;">
             <h1>Application ERROR Alert!</h1>
@@ -35,26 +37,29 @@
     <tr>
         <td>
             <h2>Error details</h2>
-            <table style="border: 1px solid black; border-collapse: collapse; border-radius: 10px; width: 100%; table-layout: auto;">
-                <tr>
-                    <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
-                        Log
-                    </th>
-                    <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
-                        Count
-                    </th>
-                </tr>
-                {% for log in logs %}
+            {% for logData in logList %}
+                <h3>Service: {{ logData.service }}</h3>
+                <table style="border: 1px solid black; border-collapse: collapse; border-radius: 10px; width: 100%; table-layout: auto;">
                     <tr>
-                        <td style="border: 1px solid black; padding: 8px;white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
-                            {{ log.log }}
-                        </td>
-                        <td style="border: 1px solid black; padding: 8px;">
-                            {{ log.count }}
-                        </td>
+                        <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
+                            Log
+                        </th>
+                        <th style="border: 1px solid black; padding: 12px; text-align: left; background-color: #4b5563; color: white;">
+                            Count
+                        </th>
                     </tr>
-                {% endfor %}
-            </table>
+                    {% for log in logData.logs %}
+                        <tr>
+                            <td style="border: 1px solid black; padding: 8px;white-space: normal; word-break: break-word; overflow-wrap: anywhere;">
+                                {{ log.log | e }}
+                            </td>
+                            <td style="border: 1px solid black; padding: 8px;">
+                                {{ log.count }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endfor %}
         </td>
     </tr>
     <tr>

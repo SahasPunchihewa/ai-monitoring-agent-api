@@ -4,7 +4,7 @@ import time
 from httpx import Client
 
 from app.config.logger_config import log
-from app.config.variable import GRAFANA_BASE_URL
+from app.config.variable import GRAFANA_BASE_URL, FREQUENCY
 from app.model.exception import LokiException, InvalidLogException
 from app.model.request import LogRequest
 
@@ -14,12 +14,18 @@ class LokiService:
 
     def query_logs(self, request: LogRequest):
         try:
-            log.info(f'Querying logs for service: {request.service} and level: {request.level}')
+            log.info(f'Querying logs for services: {request.services} and level: {request.level}')
             url = f'{GRAFANA_BASE_URL}/loki/api/v1/query_range'
 
             end = int(time.time() * 1e9)
-            start = end - 300_000_000_000  # 5 minutes ago in nanoseconds
-            query = f'{{service_name="{request.service}"}} |~ "(?i){request.level}"'
+            start = end - (int(FREQUENCY) * 60 * 1_000_000_000)
+
+            if len(request.services) == 0:
+                query = f'"{request.level}"'
+            elif len(request.services) == 1:
+                query = f'{{service_name="{request.services[0]}"}} |~ "{request.level}"'
+            else:
+                query = f'{{service_name=~"{"|".join(s for s in request.services)}"}} |~ "{request.level}"'
 
             for query_item in request.queries:
                 query += f' |~ "(?i){query_item}"'
@@ -35,39 +41,50 @@ class LokiService:
 
             response = self.client.get(url, params=params).json()['data']['result']
 
-            logs = []
-            log_details = {}
+            logs = {}
 
             for item in response:
-                logs.extend(item['values'])
-
-            for err_log in logs:
-                raw_log = err_log[1]
-                try:
-                    cleaned_log = self.sanitize_log(raw_log)
-                    log_details[err_log[0]] = cleaned_log
-                except InvalidLogException:
-                    log.info(f'Skipping invalid log: {raw_log}')
-                    continue
-
-            aggregated_logs = {}
-
-            for timestamp, err_log in log_details.items():
-                if err_log not in aggregated_logs:
-                    aggregated_logs[err_log] = {'log': err_log, 'timestamps': [timestamp], 'count': 1}
+                if item['stream']['service_name'] in logs:
+                    logs[item['stream']['service_name']].extend(item['values'])
                 else:
-                    aggregated_logs[err_log]['count'] += 1
-                    aggregated_logs[err_log]['timestamps'].append(timestamp)
+                    logs[item['stream']['service_name']] = item['values']
 
-            result_list = list(aggregated_logs.values())
+            final_logs = []
+            for service, log_list in logs.items():
+                final_logs.append({'service': service, 'logs': self.aggregate_logs(log_list, request.level)})
 
-            return result_list
+            return final_logs
         except Exception as ex:
             log.error(f'Error querying logs from Loki: {ex}')
             raise LokiException(f'Error querying logs from Loki: {ex}')
 
+    def aggregate_logs(self, logs: list, level: str) -> list:
+        log_details = {}
+
+        for err_log in logs:
+            raw_log = err_log[1]
+            try:
+                cleaned_log = self.sanitize_log(raw_log, level)
+                log_details[err_log[0]] = cleaned_log
+            except InvalidLogException:
+                log.info(f'Skipping invalid log: {raw_log}')
+                continue
+
+        aggregated_logs = {}
+
+        for timestamp, err_log in log_details.items():
+            if err_log not in aggregated_logs:
+                aggregated_logs[err_log] = {'log': err_log, 'timestamps': [timestamp], 'count': 1}
+            else:
+                aggregated_logs[err_log]['count'] += 1
+                aggregated_logs[err_log]['timestamps'].append(timestamp)
+
+        result_list = list(aggregated_logs.values())
+
+        return result_list
+
     @staticmethod
-    def sanitize_log(raw_log: str) -> str:
+    def sanitize_log(raw_log: str, level: str) -> str:
         cleaned_log = re.sub(r"\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+ #\d+\]", "", raw_log).strip()
         url_free_log = cleaned_log
 
@@ -79,7 +96,7 @@ class LokiService:
         for url in urls:
             url_free_log = url_free_log.replace(url, '')
 
-        if "error" not in url_free_log.lower():
+        if level not in url_free_log:
             raise InvalidLogException('Log does not contain "error" keyword.')
         else:
             return cleaned_log

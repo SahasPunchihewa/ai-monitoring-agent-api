@@ -3,6 +3,7 @@ from fastapi_crons import Crons
 from starlette.responses import JSONResponse
 
 from app.config.logger_config import uvicorn_logger, LogFilter, log
+from app.config.variable import SERVICES, LOG_LEVEL, QUERY, FREQUENCY
 from app.model.exception import LokiException
 from app.model.request import LogRequest
 from app.service.alert_service import AlertService
@@ -46,14 +47,14 @@ async def get_logs(request: LogRequest):
     return loki_service.query_logs(request)
 
 
-@scheduler.cron("*/5 * * * *", name="error_log_service")
+@scheduler.cron(f'*/{FREQUENCY} * * * *', name="error_log_service")
 async def every_five_minutes():
     log.info('Checking for error logs...')
 
     alert_service.send_alert(
         subject='Application Error Alert',
-        level='ERROR',
-        service='jam-bp-jam-lk-api',
-        queries=[],
+        level=LOG_LEVEL,
+        services=SERVICES,
+        queries=QUERY,
         limit=None
     )

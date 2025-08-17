@@ -3,7 +3,7 @@ from datetime import date
 
 from jinja2 import Environment, FileSystemLoader
 
-from app.config.variable import COPYRIGHT_NOTICE, LOGO_URL
+from app.config.variable import COPYRIGHT_NOTICE, LOGO_URL, COMPANY_MANE
 
 
 class TemplateService:
@@ -15,8 +15,8 @@ class TemplateService:
         template_copyright = self.jinja_env.from_string(COPYRIGHT_NOTICE)
         today_date = date.today()
 
-        rendered_content = template.render(copyrightNotice=template_copyright.render(year=today_date.year, platformName='KAYA'),
-                                           platformName='KAYA',
+        rendered_content = template.render(copyrightNotice=template_copyright.render(year=today_date.year, platformName=f' {COMPANY_MANE}'),
+                                           platformName=COMPANY_MANE,
                                            imgLink=LOGO_URL,
                                            **kwargs)
 
