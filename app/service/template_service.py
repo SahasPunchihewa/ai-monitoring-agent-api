@@ -15,7 +15,8 @@ class TemplateService:
         template_copyright = self.jinja_env.from_string(COPYRIGHT_NOTICE)
         today_date = date.today()
 
-        rendered_content = template.render(copyrightNotice=template_copyright.render(year=today_date.year, platformName=f' {COMPANY_MANE}'),
+        rendered_content = template.render(copyrightNotice=template_copyright.render(year=today_date.year,
+                                                                                     platformName=f'{'' if COMPANY_MANE == '' else f' {COMPANY_MANE}.'}'),
                                            platformName=COMPANY_MANE,
                                            imgLink=LOGO_URL,
                                            **kwargs)

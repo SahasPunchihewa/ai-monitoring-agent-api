@@ -22,6 +22,3 @@ ALERT_OPTIONS = os.getenv('ALERT_OPTIONS', 'EMAIL,SLACK').split(',')
 
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 SLACK_CHANNEL = os.getenv('SLACK_CHANNEL', 'alerts')
-
-AI_ENABLED = os.getenv('AI_ENABLED', 'True')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

@@ -11,7 +11,6 @@ All configuration values are provided via environment variables.
 - `EMAIL_USER_NAME` : SMTP email username
 - `EMAIL_PASSWORD` : SMTP email password
 - `EMAIL_RECIPIENT` : Comma-separated list of recipient emails
-- `OPENAI_API_KEY` : OpenAI API key (required if `AI_ENABLED=True`)
 
 ### Optional
 
@@ -27,7 +26,6 @@ All configuration values are provided via environment variables.
 - `ALERT_OPTIONS` : `EMAIL,SLACK` (default) – Notification channels
 - `SLACK_TOKEN` : `""` (default) – Slack API token
 - `SLACK_CHANNEL` : `alerts` (default) – Slack channel
-- `AI_ENABLED` : `True` (default) – Enable/disable AI summarization
 
 ---
 
@@ -75,7 +73,6 @@ docker run -d \
   -e EMAIL_USER_NAME=alerts@company.com \
   -e EMAIL_PASSWORD=supersecret \
   -e EMAIL_RECIPIENT=devops@company.com,ops@company.com \
-  -e OPENAI_API_KEY=sk-your-openai-key \
   monitoring-alert-service
 ```
 
