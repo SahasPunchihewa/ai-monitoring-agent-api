@@ -1,9 +1,0 @@
-## 🔴 Application ERROR Alert
-
-| Log                                              | Count |
-|--------------------------------------------------|-------|
-{% for log in logs -%}
-    | `{{ log.log | replace('\n', ' ') | truncate(80) }}` | {{ log.count }} |
-{% endfor %}
-
----
