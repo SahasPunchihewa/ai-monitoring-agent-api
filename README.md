@@ -17,6 +17,7 @@ All configuration values are provided via environment variables.
 - `HOST_ENV` : `local` (default) – Environment identifier
 - `LOG_LEVEL` : `ERROR` (default) – Log level [`DEBUG`, `INFO`, `WARNING`, `ERROR`]
 - `QUERY` : `""` (default) – Comma-separated list of queries
+- `EXCLUSIONS` : `""` (default) – Comma-separated list of exclusions
 - `FREQUENCY` : `5` (default) – Frequency (minutes) for checks
 - `EMAIL_SERVER` : `smtp.gmail.com` (default) – SMTP server
 - `EMAIL_PORT` : `465` (default) – SMTP port

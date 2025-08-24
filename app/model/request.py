@@ -7,4 +7,5 @@ class LogRequest(BaseModel):
     services: List[str]
     level: str
     queries: List[str]
+    exclusions: List[str]
     limit: int | None = None

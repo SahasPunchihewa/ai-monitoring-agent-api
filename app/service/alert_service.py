@@ -3,7 +3,7 @@ from typing import List
 from markdown_it import MarkdownIt
 
 from app.config.logger_config import log
-from app.config.variable import ALERT_OPTIONS
+from app.config.variable import ALERT_OPTIONS, EXCLUSIONS
 from app.model.exception import LokiException, AiException, EmailException, SlackException
 from app.model.request import LogRequest
 from app.service.email_service import EmailService
@@ -25,6 +25,7 @@ class AlertService:
                 services=services,
                 level=level,
                 queries=queries,
+                exclusions=EXCLUSIONS,
                 limit=limit
             )
 

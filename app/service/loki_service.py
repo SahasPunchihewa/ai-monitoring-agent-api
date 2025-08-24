@@ -1,5 +1,6 @@
 import re
 import time
+from typing import List
 
 from httpx import Client
 
@@ -51,20 +52,20 @@ class LokiService:
 
             final_logs = []
             for service, log_list in logs.items():
-                final_logs.append({'service': service, 'logs': self.aggregate_logs(log_list, request.level)})
+                final_logs.append({'service': service, 'logs': self.aggregate_logs(log_list, request.level, request.exclusions)})
 
             return final_logs
         except Exception as ex:
             log.error(f'Error querying logs from Loki: {ex}')
             raise LokiException(f'Error querying logs from Loki: {ex}')
 
-    def aggregate_logs(self, logs: list, level: str) -> list:
+    def aggregate_logs(self, logs: list, level: str, exclusions: List[str]) -> list:
         log_details = {}
 
         for err_log in logs:
             raw_log = err_log[1]
             try:
-                cleaned_log = self.sanitize_log(raw_log, level)
+                cleaned_log = self.sanitize_log(raw_log, level, exclusions)
                 log_details[err_log[0]] = cleaned_log
             except InvalidLogException:
                 log.info(f'Skipping invalid log: {raw_log}')
@@ -84,7 +85,10 @@ class LokiService:
         return result_list
 
     @staticmethod
-    def sanitize_log(raw_log: str, level: str) -> str:
+    def sanitize_log(raw_log: str, level: str, exclusions: List[str]) -> str:
+        if any(word in raw_log for word in exclusions):
+            raise InvalidLogException(f'Exclusion word found in log.')
+
         cleaned_log = re.sub(r"\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+ #\d+\]", "", raw_log).strip()
         url_free_log = cleaned_log
 
@@ -97,6 +101,6 @@ class LokiService:
             url_free_log = url_free_log.replace(url, '')
 
         if level not in url_free_log:
-            raise InvalidLogException('Log does not contain "error" keyword.')
+            raise InvalidLogException(f'Log does not contain "{level}" keyword.')
         else:
             return cleaned_log
