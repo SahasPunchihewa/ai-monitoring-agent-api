@@ -15,36 +15,38 @@ class LokiService:
 
     def query_logs(self, request: LogRequest):
         try:
-            log.info(f'Querying logs for services: {request.services} and level: {request.level}')
-            url = f'{GRAFANA_BASE_URL}/loki/api/v1/query_range'
+            responses = []
 
-            end = int(time.time() * 1e9)
-            start = end - (int(FREQUENCY) * 60 * 1_000_000_000)
+            for service in request.services:
+                log.info(f'Querying logs for services: {request.services} and level: {request.level}')
+                url = f'{GRAFANA_BASE_URL}/loki/api/v1/query_range'
 
-            if len(request.services) == 0:
-                query = f'"{request.level}"'
-            elif len(request.services) == 1:
-                query = f'{{service_name="{request.services[0]}"}} |~ "{request.level}"'
-            else:
-                query = f'{{service_name=~"{"|".join(s for s in request.services)}"}} |~ "{request.level}"'
+                end = int(time.time() * 1e9)
+                start = end - (int(FREQUENCY) * 60 * 1_000_000_000)
+                query = f'{{service_name="{service}"}} |~ "{request.level}"'
 
-            for query_item in request.queries:
-                query += f' |~ "(?i){query_item}"'
+                for query_item in request.queries:
+                    query += f' |~ "(?i){query_item}"'
 
-            params = {
-                'query': query,
-                'start': start,
-                'end': end,
-            }
+                params = {
+                    'query': query,
+                    'start': start,
+                    'end': end,
+                }
 
-            if request.limit:
-                params['limit'] = request.limit
+                if request.limit:
+                    params['limit'] = request.limit
+                else:
+                    params['limit'] = 5000
 
-            response = self.client.get(url, params=params).json()['data']['result']
+                response = self.client.get(url, params=params).json()['data']['result']
+
+                for item in response:
+                    responses.append(item)
 
             logs = {}
 
-            for item in response:
+            for item in responses:
                 if item['stream']['service_name'] in logs:
                     logs[item['stream']['service_name']].extend(item['values'])
                 else:
